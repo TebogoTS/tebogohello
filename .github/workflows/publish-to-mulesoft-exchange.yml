@@ -1,0 +1,53 @@
+name: Publish to MuleSoft Exchange via Client App
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      - name: Set up Maven
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+
+      - name: Build the MuleSoft Application
+        run: mvn clean package
+
+      - name: Install Client App
+        run: |
+          # Replace the following with the actual installation command for your client app
+          curl -L https://example.com/download/client-app -o client-app
+          chmod +x client-app
+          sudo mv client-app /usr/local/bin/
+
+      - name: Authenticate with MuleSoft via Client App
+        env:
+          CLIENT_APP_USERNAME: ${{ secrets.CLIENT_APP_USERNAME }}
+          CLIENT_APP_PASSWORD: ${{ secrets.CLIENT_APP_PASSWORD }}
+        run: |
+          client-app login --username $CLIENT_APP_USERNAME --password $CLIENT_APP_PASSWORD
+
+      - name: Publish to MuleSoft Exchange via Client App
+        env:
+          CLIENT_APP_ORG_ID: ${{ secrets.CLIENT_APP_ORG_ID }}
+        run: |
+          client-app publish --file target/your-application-name-1.0.0-mule-application.zip --organization-id $CLIENT_APP_ORG_ID

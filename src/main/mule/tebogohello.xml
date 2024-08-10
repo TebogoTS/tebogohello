@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="044f3265-9f05-4ad1-acd3-f8647f78d7ce" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="tebogohelloFlow" doc:id="fdfc70d9-d7bc-4bc1-8512-30d4f5b52cd3" >
+		<http:listener doc:name="Listener" doc:id="1739b219-e490-4b54-abe4-37fb76cc54b9" config-ref="HTTP_Listener_config" path="/hellomule"/>
+		<set-payload value="Hello  from Tebogo's first Mule API" doc:name="Set Payload" doc:id="34d3475b-8d60-497e-ab3a-786cb44d067d" />
+	</flow>
+</mule>
