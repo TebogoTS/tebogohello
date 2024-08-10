@@ -39,15 +39,17 @@ jobs:
           chmod +x client-app
           sudo mv client-app /usr/local/bin/
 
-      - name: Authenticate with MuleSoft via Client App
-        env:
-          CLIENT_APP_USERNAME: ${{ secrets.CLIENT_APP_USERNAME }}
-          CLIENT_APP_PASSWORD: ${{ secrets.CLIENT_APP_PASSWORD }}
+      - name: Generate OAuth Token
+        id: generate-token
         run: |
-          client-app login --username $CLIENT_APP_USERNAME --password $CLIENT_APP_PASSWORD
+          response=$(curl -s -X POST https://your-auth-server.com/oauth/token \
+            -d "grant_type=client_credentials" \
+            -d "client_id=${{ secrets.CLIENT_APP_CLIENT_ID }}" \
+            -d "client_secret=${{ secrets.CLIENT_APP_CLIENT_SECRET }}")
+          echo "access_token=$(echo $response | jq -r '.access_token')" >> $GITHUB_ENV
 
       - name: Publish to MuleSoft Exchange via Client App
         env:
-          CLIENT_APP_ORG_ID: ${{ secrets.CLIENT_APP_ORG_ID }}
+          ACCESS_TOKEN: ${{ env.access_token }}
         run: |
-          client-app publish --file target/your-application-name-1.0.0-mule-application.zip --organization-id $CLIENT_APP_ORG_ID
+          client-app publish --file target/your-application-name-1.0.0-mule-application.zip --access-token $ACCESS_TOKEN
