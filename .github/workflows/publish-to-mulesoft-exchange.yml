@@ -1,4 +1,4 @@
-name: Publish to MuleSoft Exchange.
+name: Publish to MuleSoft Exchange
 
 on:
   push:
@@ -32,24 +32,19 @@ jobs:
       - name: Build the MuleSoft Application
         run: mvn clean package
 
-      - name: Install Client App
+      - name: Install MuleSoft CLI
         run: |
-          # Replace the following with the actual installation command for your client app
-          curl -L https://example.com/download/client-app -o client-app
-          chmod +x client-app
-          sudo mv client-app /usr/local/bin/
+          curl -L https://anypoint.mulesoft.com/downloads/mule/mule-4.3.0.zip --output mule.zip
+          unzip mule.zip -d /usr/local/
+          export PATH=$PATH:/usr/local/mule-4.3.0/bin
 
-      - name: Generate OAuth Token
-        id: generate-token
-        run: |
-          response=$(curl -s -X POST https://your-auth-server.com/oauth/token \
-            -d "grant_type=client_credentials" \
-            -d "client_id=${{ secrets.CLIENT_APP_CLIENT_ID }}" \
-            -d "client_secret=${{ secrets.CLIENT_APP_CLIENT_SECRET }}")
-          echo "access_token=$(echo $response | jq -r '.access_token')" >> $GITHUB_ENV
-
-      - name: Publish to MuleSoft Exchange via Client App
+      - name: Authenticate with MuleSoft Anypoint Platform
         env:
-          ACCESS_TOKEN: ${{ env.access_token }}
-        run: |
-          client-app publish --file target/your-application-name-1.0.0-mule-application.zip --access-token $ACCESS_TOKEN
+          MULE_USERNAME: ${{ secrets.MULE_USERNAME }}
+          MULE_PASSWORD: ${{ secrets.MULE_PASSWORD }}
+        run: mule login -u $MULE_USERNAME -p $MULE_PASSWORD
+
+      - name: Publish to MuleSoft Exchange
+        env:
+          MULE_ORG_ID: ${{ secrets.MULE_ORG_ID }}
+        run: mule exchange:publish -f target/your-application-name-1.0.0-mule-application.zip --organizationId $MULE_ORG_ID
