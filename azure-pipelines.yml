@@ -1,0 +1,88 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+jobs:
+  - job: Build
+    displayName: 'Build the MuleSoft Application'
+    steps:
+      - checkout: self
+        displayName: 'Checkout the repository'
+
+      - task: Cache@2
+        displayName: 'Cache Maven dependencies'
+        inputs:
+          key: 'maven | "$(Agent.OS)" | **/pom.xml'
+          path: $(Agent.ToolsDirectory)/maven-cache
+          restoreKeys: |
+            maven | "$(Agent.OS)"
+
+      - script: |
+          sudo apt-get update
+          sudo apt-get install openjdk-8-jdk -y
+          echo "##vso[task.setvariable variable=JAVA_HOME]/usr/lib/jvm/java-8-openjdk-amd64"
+        displayName: 'Install JDK 1.8'
+      
+      - task: Maven@3
+        displayName: 'Build with Maven'
+        inputs:
+          mavenPomFile: 'pom.xml'
+          options: '-B'
+          goals: 'clean package'
+          javaHomeOption: 'Path'
+          jdkDirectory: '$(JAVA_HOME)'
+          mavenOptions: '-X'
+
+      - script: |
+          echo "Checking for built Mule application artifact..."
+          ls -la target/  # Check target directory contents after the build
+        displayName: 'Check target directory after build'
+
+      - script: |
+          artifactName=$(ls target/*.jar target/*.zip | head -1)  # Adjust to match the artifact format (JAR/ZIP)
+          commitHash=$(Build.SourceVersion)
+          artifactNameWithHash=$(echo $artifactName | sed "s/.jar/-$commitHash.jar/g; s/.zip/-$commitHash.zip/g")
+          mv $artifactName $artifactNameWithHash
+        displayName: 'Stamp artifact file with commit hash'
+
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: '$(Pipeline.Workspace)/target'
+          artifactName: 'artifacts'
+        displayName: 'Upload artifact'
+
+  - job: Deploy
+    dependsOn: Build
+    displayName: 'Deploy to Anypoint Exchange Sandbox'
+    steps:
+      - checkout: self
+        displayName: 'Checkout the repository'
+
+      - task: Cache@2
+        displayName: 'Cache Maven dependencies'
+        inputs:
+          key: 'maven | "$(Agent.OS)" | **/pom.xml'
+          path: $(Agent.ToolsDirectory)/maven-cache
+          restoreKeys: |
+            maven | "$(Agent.OS)"
+
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          buildType: 'current'
+          artifactName: 'artifacts'
+        displayName: 'Download artifact'
+
+      - script: |
+          artifactName=$(ls $(Pipeline.Workspace)/artifacts/*.jar $(Pipeline.Workspace)/artifacts/*.zip | head -1)
+          mvn deploy -DmuleDeploy \
+            -Dmule.artifact=$artifactName \
+            -Danypoint.username="$(ANYPOINT_PLATFORM_USERNAME)" \
+            -Danypoint.password="$(ANYPOINT_PLATFORM_PASSWORD)"
+        displayName: 'Deploy to Sandbox'
+        env:
+          ANYPOINT_PLATFORM_USERNAME: $(ANYPOINT_PLATFORM_USERNAME)
+          ANYPOINT_PLATFORM_PASSWORD: $(ANYPOINT_PLATFORM_PASSWORD)
