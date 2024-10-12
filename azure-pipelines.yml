@@ -24,9 +24,9 @@ jobs:
       - task: JavaToolInstaller@0
         displayName: 'Set up JDK 1.8'
         inputs:
-          versionSpec: '1.8'
-          jdkArchitectureOption: 'x64'
-          jdkSourceOption: 'PreInstalled'  # Set the source of JDK to 'PreInstalled'
+          versionSpec: '1.8'               # Specify Java version
+          jdkArchitectureOption: 'x64'     # Set architecture
+          jdkSourceOption: 'HostedToolCache'  # Use Azure's tool cache
 
       - task: Maven@3
         displayName: 'Build with Maven'
