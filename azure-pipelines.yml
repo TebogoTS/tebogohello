@@ -21,27 +21,20 @@ jobs:
           restoreKeys: |
             maven | "$(Agent.OS)"
 
-      - task: UsePythonVersion@0
-        displayName: 'Install Python 3.x'
-        inputs:
-          versionSpec: '3.x'
-          addToPath: true
-
-      - task: JavaToolInstaller@0
-        displayName: 'Set up JDK 1.8'
-        inputs:
-          versionSpec: '1.8'
-          jdkArchitectureOption: 'x64'
-          jdkSourceOption: 'HostedToolCache'  # Use Azure's tool cache to get the JDK
-
+      - script: |
+          sudo apt-get update
+          sudo apt-get install openjdk-8-jdk -y
+          echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64" >> $GITHUB_ENV
+        displayName: 'Install JDK 1.8'
+      
       - task: Maven@3
         displayName: 'Build with Maven'
         inputs:
           mavenPomFile: 'pom.xml'
           options: '-B'
           goals: 'clean package'
-          javaHomeOption: 'JDKVersion'
-          jdkVersionOption: '1.8'
+          javaHomeOption: 'Path'
+          jdkDirectory: '/usr/lib/jvm/java-8-openjdk-amd64'
           mavenOptions: '-X'
 
       - script: |
