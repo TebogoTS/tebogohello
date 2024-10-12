@@ -34,14 +34,19 @@ jobs:
           options: '-B'
           goals: 'clean package'
           javaHomeOption: 'Path'
-          jdkDirectory: '$(JAVA_HOME)'  # Use the JAVA_HOME variable set above
+          jdkDirectory: '$(JAVA_HOME)'
           mavenOptions: '-X'
 
       - script: |
-          artifactName1=$(ls target/*.jar | head -1)
+          echo "Checking for built Mule application artifact..."
+          ls -la target/  # Check target directory contents after the build
+        displayName: 'Check target directory after build'
+
+      - script: |
+          artifactName=$(ls target/*.jar target/*.zip | head -1)  # Adjust to match the artifact format (JAR/ZIP)
           commitHash=$(Build.SourceVersion)
-          artifactName2=$(echo $artifactName1 | sed "s/.jar/-$commitHash.jar/g")
-          mv $artifactName1 $artifactName2
+          artifactNameWithHash=$(echo $artifactName | sed "s/.jar/-$commitHash.jar/g; s/.zip/-$commitHash.zip/g")
+          mv $artifactName $artifactNameWithHash
         displayName: 'Stamp artifact file with commit hash'
 
       - task: PublishPipelineArtifact@1
@@ -72,7 +77,7 @@ jobs:
         displayName: 'Download artifact'
 
       - script: |
-          artifactName=$(ls $(Pipeline.Workspace)/artifacts/*.jar | head -1)
+          artifactName=$(ls $(Pipeline.Workspace)/artifacts/*.jar $(Pipeline.Workspace)/artifacts/*.zip | head -1)
           mvn deploy -DmuleDeploy \
             -Dmule.artifact=$artifactName \
             -Danypoint.username="$(ANYPOINT_PLATFORM_USERNAME)" \
