@@ -24,7 +24,7 @@ jobs:
       - script: |
           sudo apt-get update
           sudo apt-get install openjdk-8-jdk -y
-          echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64" >> $GITHUB_ENV
+          echo "##vso[task.setvariable variable=JAVA_HOME]/usr/lib/jvm/java-8-openjdk-amd64"
         displayName: 'Install JDK 1.8'
       
       - task: Maven@3
@@ -34,7 +34,7 @@ jobs:
           options: '-B'
           goals: 'clean package'
           javaHomeOption: 'Path'
-          jdkDirectory: '/usr/lib/jvm/java-8-openjdk-amd64'
+          jdkDirectory: '$(JAVA_HOME)'  # Use the JAVA_HOME variable set above
           mavenOptions: '-X'
 
       - script: |
