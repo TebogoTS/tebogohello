@@ -17,30 +17,37 @@ jobs:
         displayName: 'Cache Maven dependencies'
         inputs:
           key: 'maven | "$(Agent.OS)" | **/pom.xml'
-          path: $(MAVEN_CACHE_FOLDER)
+          path: $(Agent.ToolsDirectory)/maven-cache
           restoreKeys: |
             maven | "$(Agent.OS)"
-        
+
       - task: JavaToolInstaller@0
         displayName: 'Set up JDK 1.8'
         inputs:
           versionSpec: '1.8'
-          jdkArchitectureOption: x64
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'  # Set the source of JDK to 'PreInstalled'
 
-      - script: |
-          mvn -B package --file pom.xml
+      - task: Maven@3
         displayName: 'Build with Maven'
+        inputs:
+          mavenPomFile: 'pom.xml'
+          options: '-B'
+          goals: 'clean package'
+          javaHomeOption: 'JDKVersion'
+          jdkVersionOption: '1.8'
+          mavenOptions: '-X'
 
       - script: |
           artifactName1=$(ls target/*.jar | head -1)
           commitHash=$(Build.SourceVersion)
-          artifactName2=$(ls target/*.jar | head -1 | sed "s/.jar/-$commitHash.jar/g")
+          artifactName2=$(echo $artifactName1 | sed "s/.jar/-$commitHash.jar/g")
           mv $artifactName1 $artifactName2
         displayName: 'Stamp artifact file with commit hash'
 
       - task: PublishPipelineArtifact@1
         inputs:
-          targetPath: 'target/*.jar'
+          targetPath: '$(Pipeline.Workspace)/target'
           artifactName: 'artifacts'
         displayName: 'Upload artifact'
 
@@ -55,7 +62,7 @@ jobs:
         displayName: 'Cache Maven dependencies'
         inputs:
           key: 'maven | "$(Agent.OS)" | **/pom.xml'
-          path: $(MAVEN_CACHE_FOLDER)
+          path: $(Agent.ToolsDirectory)/maven-cache
           restoreKeys: |
             maven | "$(Agent.OS)"
 
@@ -66,7 +73,7 @@ jobs:
         displayName: 'Download artifact'
 
       - script: |
-          artifactName=$(ls *.jar | head -1)
+          artifactName=$(ls $(Pipeline.Workspace)/artifacts/*.jar | head -1)
           mvn deploy -DmuleDeploy \
             -Dmule.artifact=$artifactName \
             -Danypoint.username="$(ANYPOINT_PLATFORM_USERNAME)" \
