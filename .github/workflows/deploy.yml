@@ -1,0 +1,21 @@
+name: Deploy to MuleSoft Runtime Fabric
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Anypoint CLI
+        run: |
+          echo "Setting up MuleSoft CLI..."
+          curl -L https://anypoint.mulesoft.com/installer/anypoint-cli-linux-64 --output anypoint-cli
+          chmod +x anypoint-cli
+          ./anypoint-cli --help
+
