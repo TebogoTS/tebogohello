@@ -76,12 +76,12 @@ jobs:
         env:
           ACCESS_TOKEN: ${{ env.access_token }}
         run: |
-          curl --location --request POST "https://anypoint.mulesoft.com/runtimefabric/api/v1/applications" \
+          curl --location --request POST "https://anypoint.mulesoft.com/runtimefabric/api/v2/deployments" \
           --header "Authorization: Bearer $ACCESS_TOKEN" \
           --header "Content-Type: application/json" \
           --data-raw "{
               \"name\": \"my-app-dev\",
-              \"file\": \"path/to/your/tebogohello-mule-application-v1.jar\",
+              \"file\": \"target/tebogohello-1.0.0-SNAPSHOT-mule-application.jar\",
               \"runtimeVersion\": \"4.3.0\",
               \"replicas\": 2,
               \"properties\": {
