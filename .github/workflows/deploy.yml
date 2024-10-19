@@ -39,7 +39,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: mule-application
-          path: target/tebogohello-mule-application-v1.jar
+          path: target/tebogohello-1.0.0-SNAPSHOT-mule-application.jar
 
   generate-oauth-token:
     runs-on: ubuntu-latest
