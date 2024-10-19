@@ -79,7 +79,7 @@ jobs:
           curl --location --request POST "https://anypoint.mulesoft.com/cloudhub/api/v2/applications" \
           --header "Authorization: Bearer $ACCESS_TOKEN" \
           --header "Content-Type: application/json" \
-          --data-raw "{
+          --data-raw '{
               "domain": "my-app-dev",
               "workerSize": "0.2 vCores",
               "workers": 1,
@@ -91,4 +91,4 @@ jobs:
                 "anypoint.platform.client_id": "'${CLIENT_ID}'",
                 "anypoint.platform.client_secret": "'${CLIENT_SECRET}'"
               }
-          }"
+          }'
