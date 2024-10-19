@@ -76,7 +76,7 @@ jobs:
         env:
           ACCESS_TOKEN: ${{ env.access_token }}
         run: |
-          curl --location --request POST "https://anypoint.mulesoft.com/runtimefabric/api/v2/deployments" \
+          curl --location --request POST "https://anypoint.mulesoft.com/runtimefabric/api/organizations/46981a65-e27d-4949-8ab7-04287963dab9/environments/6620aa18-7c4e-4051-91a6-e6d95343c693/deployments" \
           --header "Authorization: Bearer $ACCESS_TOKEN" \
           --header "Content-Type: application/json" \
           --data-raw "{
